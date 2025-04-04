@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag & Drop with LocalStorage</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .group1, .group2 {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      border: 1px solid black;
+      width: 200px;
+      background-color: rgb(225, 225, 238);
+      min-height: 200px;
+      padding: 10px;
+    }
+
+    .group1 {
+      top: 100px;
+      left: 300px;
+    }
+
+    .group2 {
+      top: 100px;
+      right: 300px;
+    }
+
+    .users1, .users2 {
+      
+      width: 100px;
+      height: 45px;
+      margin: 5px;
+      text-align: center;
+      cursor: grab;
+      
+    }
+  </style>
+</head>
+<body>
+  <div class="group1" id="grp1" ondrop="drophandler(event)" ondragover="dragover(event)">
+    <h2>Group1</h2>
+    <hr>
+    <div class="users1" id="u1" draggable="true" ondragstart="dragstart(event)">User1</div>
+    <div class="users1" id="u2" draggable="true" ondragstart="dragstart(event)">User2</div>
+  </div>
+
+  <div class="group2" id="grp2" ondrop="drophandler(event)" ondragover="dragover(event)">
+    <h2>Group2</h2>
+    <hr>
+    <div class="users2" id="u3" draggable="true" ondragstart="dragstart(event)">User3</div>
+    <div class="users2" id="u4" draggable="true" ondragstart="dragstart(event)">User4</div>
+  </div>
+
+  <script>
+    function dragstart(e) {
+      e.dataTransfer.setData("text", e.target.id);
+    }
+
+    function dragover(e) {
+      e.preventDefault();
+    }
+
+    function drophandler(e) {
+      e.preventDefault();
+      const data = e.dataTransfer.getData("text");
+      const draggedElement = document.getElementById(data);
+
+        let dropTarget = e.target;
+        while (!dropTarget.classList.contains('group1') && !dropTarget.classList.contains('group2')) {
+            dropTarget = dropTarget.parentElement;
+      }
+
+      dropTarget.appendChild(draggedElement);
+      savePositions();
+    }
+
+    function savePositions() {
+      const grp1 = Array.from(document.querySelectorAll('#grp1 .users1, #grp1 .users2')).map(el => el.id);
+      const grp2 = Array.from(document.querySelectorAll('#grp2 .users1, #grp2 .users2')).map(el => el.id);
+
+      const positions = { grp1, grp2 };
+      localStorage.setItem("positions", JSON.stringify(positions));
+    }
+
+    function loadPositions() {
+      const positions = JSON.parse(localStorage.getItem("positions"));
+      if (!positions) return;
+
+      positions.grp1.forEach(id => {
+        const el = document.getElementById(id);
+        document.getElementById('grp1').appendChild(el);
+      });
+
+      positions.grp2.forEach(id => {
+        const el = document.getElementById(id);
+        document.getElementById('grp2').appendChild(el);
+      });
+    }
+
+    window.onload = loadPositions;
+  </script>
+</body>
+</html>
